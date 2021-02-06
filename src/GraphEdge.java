@@ -6,7 +6,7 @@
  * @author : Zitao He
  * @date : 2021-01-24 12:36
  **/
-public class GraphEdge {
+public class GraphEdge implements Comparable<GraphEdge>{
     private int startID;
     private int endID;
     private int length;
@@ -26,6 +26,19 @@ public class GraphEdge {
 
     public int getLength() {
         return length;
+    }
+
+    @Override
+    public int compareTo(GraphEdge other){
+        if (this.getLength() < other.getLength()){
+            return -1;
+        }
+        if (this.getLength() > other.getLength()){
+            return 1;
+        }
+        else{
+            return 0;
+        }
     }
 
     @Override
