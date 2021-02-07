@@ -34,12 +34,19 @@ import java.util.Scanner;
  **/
 
 public class KnapsackOptimizer {
+
     int knapsackSize;
     int numItems;
     int[] value;
     int[] weight;
     int[][] solutionMatrix;
+    int[][] fastSolutionMatrix;
 
+    /**
+     * Construct the optimizer using external txt file. File format can be founded in class description
+     * @param fileInputName file name
+     * @throws FileNotFoundException throws error if file not found
+     */
     public KnapsackOptimizer(String fileInputName) throws FileNotFoundException{
         Scanner fileScanner;
         try{
@@ -60,13 +67,15 @@ public class KnapsackOptimizer {
             weight[i] = Integer.parseInt(valueAndWeight[1]);
             i++;
         }
-        solutionMatrix = new int[numItems+1][knapsackSize+1];
+        //solutionMatrix = new int[numItems+1][knapsackSize+1];
+        fastSolutionMatrix = new int[2][knapsackSize+1];
     }
+
+    /**
+     * Implementing a dynamic programming algorithm to find the optimal solution.
+     * A 2D array is used to store the local optimal result
+     */
     public void runOptimization(){
-        for (int i = 0; i < solutionMatrix[0].length; i++){
-            solutionMatrix[0][i] = 0;
-        }
-        //System.out.println(Arrays.deepToString(solutionMatrix));
         for (int i = 1; i <= numItems; i++){
             for (int x = 0; x <= knapsackSize; x++){
                 if (weight[i-1] > x) {
@@ -80,9 +89,49 @@ public class KnapsackOptimizer {
 
     }
 
+    /**
+     * Implementing a faster dynamic programming algorithm to find the optimal solution.
+     * A 2 by n array is used to store the local optimal result. n is the number of items in optimizer.
+     */
+    public void runFastOptimization(){
+        int i = 1;
+        while (i <= numItems){
+            for (int x = 0; x <= knapsackSize; x++){
+                int[] temp = fastSolutionMatrix[0];
+                if (weight[i-1] > x) {
+                    fastSolutionMatrix[1][x] = fastSolutionMatrix[0][x];
+                }
+                else{
+                    fastSolutionMatrix[1][x] = Math.max(fastSolutionMatrix[0][x], fastSolutionMatrix[0][x-weight[i-1]]+value[i-1]);
+                }
+                fastSolutionMatrix[0] = temp;
+            }
+            i++;
+            for (int j = 0; j < fastSolutionMatrix[1].length; j ++){
+                fastSolutionMatrix[0][j] = fastSolutionMatrix[1][j];
+            }
+        }
+    }
+
+    /**
+     * Get the final optimal total value of optimal solution for 2D array algorithm
+     * @return final optimal total value
+     */
     public int getOptimalValueSum(){
         return solutionMatrix[numItems][knapsackSize];
     }
+
+    /**
+     * Get the final optimal total value of optimal solution for 2*n array algorithm
+     * @return final optimal total value
+     */
+    public int getFastOptimalValueSum(){
+        return fastSolutionMatrix[1][knapsackSize];
+    }
+
+    /**
+     * Helper print method for debugging
+     */
     public void printOptimizer(){
         System.out.println("Printing number of items: " + numItems);
         System.out.println("Printing knapsack size: " + knapsackSize);
@@ -90,7 +139,6 @@ public class KnapsackOptimizer {
         for (int i = 0; i<weight.length; i++){
             System.out.println(value[i] + ". " + weight[i]);
         }
-
     }
 
     public static void main(String[] args) throws FileNotFoundException {
@@ -98,17 +146,21 @@ public class KnapsackOptimizer {
         //(value 50, weight 75), (value 50, weight 59), (value 50, weight 56)
         //KnapsackOptimizer tester = new KnapsackOptimizer("data/knapsack-test1.txt");
 
-
         //correct answer of knapsack-test1.txt is 14
         //KnapsackOptimizer tester = new KnapsackOptimizer("data/knapsack-test2.txt");
 
+        //KnapsackOptimizer tester = new KnapsackOptimizer("data/knapsack-test3.txt");
+
         //correct answer of knapsack1.txt is 2493893
-        KnapsackOptimizer tester = new KnapsackOptimizer("data/knapsack1.txt");
+        //KnapsackOptimizer tester = new KnapsackOptimizer("data/knapsack1.txt");
 
-        //tester.printOptimizer();
-        tester.runOptimization();
-        System.out.println("Total value of optimal solution is: " + tester.getOptimalValueSum());
+        //correct answer of knapsack_big.txt is 4243395
+        KnapsackOptimizer tester = new KnapsackOptimizer("data/knapsack_big.txt");
 
+        //tester.runOptimization();
+        //System.out.println("Total value of optimal solution is: " + tester.getOptimalValueSum());
+
+        tester.runFastOptimization();
+        System.out.println("Total value of optimal solution is: " + tester.getFastOptimalValueSum());
     }
-
 }
